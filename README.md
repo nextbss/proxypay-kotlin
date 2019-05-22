@@ -40,14 +40,14 @@ maven
 <dependency>
 	<groupId>com.github.nextbss</groupId>
 	<artifactId>proxypay-kotlin</artifactId>
-	<version>Tag</version>
+	<version>v1.0.0</version>
 </dependency>
 ```
 
 gradle
 ```xml
 dependencies {
-	 implementation 'com.github.nextbss:proxypay-kotlin:v1.0'
+	implementation 'com.github.nextbss:proxypay-kotlin:v1.0.0'
 }
 ```
 
