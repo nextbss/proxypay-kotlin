@@ -1,9 +1,7 @@
 # ProxyPay 
-A Kotlin/Java library that helps you easily interact with the ProxyPay API
+A Kotlin / Java library that helps you easily interact with the ProxyPay API
 
 [![](https://jitpack.io/v/nextbss/proxypay-kotlin.svg)](https://jitpack.io/#nextbss/proxypay-kotlin)
-
-
 
 Usage
 ---------------
@@ -26,10 +24,10 @@ maven
 gradle
 ```xml
 allprojects {
-		repositories {
-			...
-			maven { url 'https://jitpack.io' }
-		}
+	repositories {
+		...
+		maven { url 'https://jitpack.io' }
+	}
 }
 ```
 
@@ -181,7 +179,7 @@ proxyPayPayment?.deleteReference(object : TransactionCallback<String> {
 ```
 
 ### Acknowledge a payment
-This method is used to ackonwledge that a payment was processed
+This method is used to acknowledge that a payment was processed
 ```java
 
 ProxyPayConfig.configure(Environment.SANDBOX, "YOUR_API_KEY")
