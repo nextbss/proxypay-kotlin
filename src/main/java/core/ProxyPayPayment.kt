@@ -12,6 +12,8 @@ package core
 import com.squareup.moshi.JsonAdapter
 import core.client.TransactionCallback
 import core.config.ProxyPayConfig
+import core.models.MockPaymentRequest
+import core.models.MockPaymentResponse
 import core.models.PaymentReferenceRequest
 import okhttp3.Call
 import okhttp3.Callback
@@ -27,17 +29,23 @@ import java.io.IOException
 class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
     private val jsonAdapter: JsonAdapter<String> = moshi.adapter(String::class.java)
     private val referenceAdapter: JsonAdapter<String> = moshi.adapter(String::class.java)
+    private val mockPaymentAdapter: JsonAdapter<MockPaymentResponse> = moshi.adapter(MockPaymentResponse::class.java)
 
     init {
         super.config = builder.config
         if (builder.request != null) {
             super.referenceRequest = builder.request!!
         }
+
+        if (builder.mockPaymentRequest != null) {
+            super.mockPaymentRequest = builder.mockPaymentRequest!!
+        }
     }
 
     class PaymentTransactionBuilder {
         var request: PaymentReferenceRequest? = null
         lateinit var config: ProxyPayConfig
+        var mockPaymentRequest: MockPaymentRequest? = null
 
         private fun validateDate(date: String): Boolean {
             val fmt = DateTimeFormat.forPattern("yyyy-MM-dd")
@@ -63,6 +71,11 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
 
         fun addProxyPayConfiguration(config: ProxyPayConfig): PaymentTransactionBuilder {
             this.config = config
+            return this
+        }
+
+        fun addMockPaymentRequest(request: MockPaymentRequest): PaymentTransactionBuilder {
+            this.mockPaymentRequest = request
             return this
         }
 
@@ -108,10 +121,23 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
         })
     }
 
+    fun mockPayment(callback: TransactionCallback<MockPaymentResponse>) {
+        prepareMockRequest("/payments", "post", this.mockPaymentRequest)
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(p0: Call, p1: Response) {
+                handleMockPaymentResponse(mockPaymentAdapter, p1, callback)
+            }
+
+            override fun onFailure(p0: Call, p1: IOException) {
+                println(p1.message)
+            }
+        })
+    }
+
     private fun handleRefResponse(
-        adapter: JsonAdapter<String>,
-        response: Response,
-        callback: TransactionCallback<String>
+            adapter: JsonAdapter<String>,
+            response: Response,
+            callback: TransactionCallback<String>
     ) {
         when (response.code()) {
             200 -> {
@@ -151,9 +177,9 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
     }
 
     private fun handleDeleteResponse(
-        adapter: JsonAdapter<String>,
-        response: Response,
-        callback: TransactionCallback<String>
+            adapter: JsonAdapter<String>,
+            response: Response,
+            callback: TransactionCallback<String>
     ) {
         when (response.code()) {
             200 -> {
@@ -196,9 +222,9 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
     }
 
     private fun handleResponse(
-        adapter: JsonAdapter<String>,
-        response: Response,
-        callback: TransactionCallback<String>
+            adapter: JsonAdapter<String>,
+            response: Response,
+            callback: TransactionCallback<String>
     ) {
         when (response.code()) {
             200 -> {
@@ -236,6 +262,48 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
             }
             else -> {
                 callback.onFailure("An error occurred => HTTP Status ${response.code()}")
+            }
+        }
+    }
+
+    private fun handleMockPaymentResponse(
+            adapter: JsonAdapter<MockPaymentResponse>,
+            response: Response,
+            callback: TransactionCallback<MockPaymentResponse>
+    ) {
+        when (response.code()) {
+            200 -> {
+                callback.onSuccess(adapter.fromJson(response.body()?.string()!!)!!)
+            }
+            401 -> {
+                callback.onFailure("Your API key is wrong")
+            }
+            400 -> {
+                callback.onFailure("Bad Request -- Request is malformed.")
+            }
+            404 -> {
+                callback.onFailure("Not Found -- The specified resource could not be found")
+            }
+            405 -> {
+                callback.onFailure("Method Now Allowed -- Tou tried to accesss a resource with an invalid HTTP method")
+            }
+            406 -> {
+                callback.onFailure("Not Acceptable -- You requested a format that is not json")
+            }
+            422 -> {
+                callback.onFailure("Unprocessable Entity -- Your request includes invalid fields. Check the response body for details")
+            }
+            429 -> {
+                callback.onFailure("Too Many Requests -- You're exceeding the API rate limit! Reduce the number of requests / minute.")
+            }
+            500 -> {
+                callback.onFailure("Internal Server Error -- We had a problem with our server. Try again later ")
+            }
+            503 -> {
+                callback.onFailure("Service Unavailable -- We're temporarily offline for maintenance. Please try again later.")
+            }
+            else -> {
+                callback.onFailure("An error occurred while attempting to generate a new payment reference => HTTP Status ${response.code()}")
             }
         }
     }

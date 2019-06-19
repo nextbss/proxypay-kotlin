@@ -198,6 +198,29 @@ val proxyPay = ProxyPayPayment.PaymentTransactionBuilder()
             }
         }, referenceId)
 ```
+### Create a mock payment
+This is only available on the Sandbox environment and produces a simulated Payment event, as if originated directly from Multicaixa.
+This will trigger a call to the Webhook, if configured. Otherwise the Payment will be available through a call to Get Payments.
+```kotlin
+ProxyPayConfig.configure(Environment.SANDBOX, "YOUR_API_KEY")
+
+val mockPaymentRequest = MockPaymentRequest("2000.00", "841520000")
+
+val proxyPay = ProxyPayPayment.PaymentTransactionBuilder()
+            .addProxyPayConfiguration(ProxyPayConfig.getInstance())
+            .addMockPaymentRequest(mockPaymentRequest)
+            .build()
+
+    proxyPay.mockPayment(object: TransactionCallback<MockPaymentResponse> {
+        override fun onSuccess(response: MockPaymentResponse) {
+            println(response.toString())
+        }
+
+        override fun onFailure(error: String) {
+            println("Failure occurred: $error")
+        }
+    })
+```
 
 License
 ----------------

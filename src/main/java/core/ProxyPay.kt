@@ -13,6 +13,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import core.config.ProxyPayConfig
 import core.models.EmptyBody
+import core.models.MockPaymentRequest
+import core.models.MockPaymentResponse
 import core.models.PaymentReferenceRequest
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
@@ -26,7 +28,9 @@ abstract class ProxyPay {
     private val sandboxUrl = "https://api.sandbox.proxypay.co.ao"
     private val productionUrl = "https://api.proxypay.co.ao"
     protected lateinit var request: Request
+    protected lateinit var mockPaymentRequest: MockPaymentRequest
     private lateinit var requestBody: RequestBody
+    private var mockPaymentAdapter: JsonAdapter<MockPaymentRequest> = moshi.adapter(MockPaymentRequest::class.java)
     protected lateinit var referenceRequest: PaymentReferenceRequest
     private val jsonAdapter: JsonAdapter<PaymentReferenceRequest> = moshi.adapter(PaymentReferenceRequest::class.java)
     private val emptyAdapter: JsonAdapter<EmptyBody> = moshi.adapter(EmptyBody::class.java)
@@ -45,16 +49,25 @@ abstract class ProxyPay {
             true -> request.post(body)
         }
         request.addHeader("Accept", "application/vnd.proxypay.v2+json")
-            .addHeader("Content-Type", "application/json")
-            .addHeader("Authorization", "Token ${config.getInstance().getApiKey()}")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Authorization", "Token ${config.getInstance().getApiKey()}")
         this.request = request.build()
     }
 
+    protected fun prepareMockRequest(endpoint: String, method: String, mockPaymentRequest: MockPaymentRequest) {
+        when (method) {
+            "post" -> {
+                requestBody = RequestBody.create(mediaType, mockPaymentAdapter.toJson(mockPaymentRequest))
+                buildRequest(endpoint, Request.Builder(), requestBody)
+            }
+        }
+    }
+
     protected fun prepareRequest(
-        endpoint: String,
-        method: String,
-        request: PaymentReferenceRequest? = null,
-        sendBodyInRequest: Boolean? = false
+            endpoint: String,
+            method: String,
+            request: PaymentReferenceRequest? = null,
+            sendBodyInRequest: Boolean? = false
     ) {
         when (method) {
             "get" -> {

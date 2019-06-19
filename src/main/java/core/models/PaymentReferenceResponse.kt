@@ -1,5 +1,5 @@
 package core.models
 
 data class PaymentReferenceResponse(
-    val reference: Reference? = null
+        val reference: Reference? = null
 ) : GenericModel

@@ -69,9 +69,9 @@ class ProxyPayReference(builder: ProxyReferenceBuilder) : ProxyPay() {
     }
 
     private fun handleResponse(
-        adapter: JsonAdapter<List<ReferencesResponse>>,
-        response: Response,
-        callback: TransactionCallback<List<ReferencesResponse>>
+            adapter: JsonAdapter<List<ReferencesResponse>>,
+            response: Response,
+            callback: TransactionCallback<List<ReferencesResponse>>
     ) {
         when (response.code()) {
             200 -> {
