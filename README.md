@@ -2,6 +2,7 @@
 A Kotlin / Java library that helps you easily interact with the ProxyPay API
 
 [![](https://jitpack.io/v/nextbss/proxypay-kotlin.svg)](https://jitpack.io/#nextbss/proxypay-kotlin)
+[![](https://img.shields.io/badge/nextbss-opensource-blue.svg)](https://www.nextbss.co.ao)
 
 Usage
 ---------------
