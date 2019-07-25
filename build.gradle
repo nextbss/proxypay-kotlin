@@ -15,7 +15,7 @@ repositories {
 dependencies {
     implementation("com.squareup.moshi:moshi:1.8.0")
     implementation("joda-time:joda-time:2.10.2")
-    implementation 'com.squareup.okhttp3:okhttp:3.14.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.0.0'
     testCompile group: 'junit', name: 'junit', version: '4.12'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
