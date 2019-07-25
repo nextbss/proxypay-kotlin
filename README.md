@@ -37,16 +37,16 @@ Step 2. Add the dependency
 maven 
 ```xml
 <dependency>
-	<groupId>com.github.nextbss</groupId>
-	<artifactId>proxypay-kotlin</artifactId>
-	<version>v1.0.2</version>
+	    <groupId>com.github.nextbss</groupId>
+	    <artifactId>proxypay-kotlin</artifactId>
+	    <version>1.0.2</version>
 </dependency>
 ```
 
 gradle
 ```xml
 dependencies {
-	implementation 'com.github.nextbss:proxypay-kotlin:v1.0.2'
+	implementation 'com.github.nextbss:proxypay-kotlin:1.0.2'
 }
 ```
 
