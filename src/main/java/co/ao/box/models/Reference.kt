@@ -10,4 +10,4 @@ data class Reference(
         val id: String? = null,
         val entity_id: String? = null,
         val status: String? = null
-) : GenericModel
+)

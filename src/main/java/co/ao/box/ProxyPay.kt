@@ -17,6 +17,7 @@ import core.models.MockPaymentRequest
 import core.models.MockPaymentResponse
 import core.models.PaymentReferenceRequest
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -34,7 +35,7 @@ abstract class ProxyPay {
     protected lateinit var referenceRequest: PaymentReferenceRequest
     private val jsonAdapter: JsonAdapter<PaymentReferenceRequest> = moshi.adapter(PaymentReferenceRequest::class.java)
     private val emptyAdapter: JsonAdapter<EmptyBody> = moshi.adapter(EmptyBody::class.java)
-    private val mediaType = MediaType.parse("application/json")
+    private val mediaType = "application/json".toMediaTypeOrNull()
 
     private fun buildRequest(endpoint: String, request: Request.Builder, body: RequestBody? = null) {
         when (config.getEnvironment()) {
@@ -49,7 +50,7 @@ abstract class ProxyPay {
             true -> request.post(body)
         }
         request.addHeader("Accept", "application/vnd.proxypay.v2+json")
-                .addHeader("Content-Type", "application/json")
+                .addHeader("Content-Type", mediaType.toString())
                 .addHeader("Authorization", "Token ${config.getInstance().getApiKey()}")
         this.request = request.build()
     }

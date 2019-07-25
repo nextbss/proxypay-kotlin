@@ -19,4 +19,4 @@ data class ReferencesResponse(
         val terminal_transaction_id: Int? = null,
         val terminal_id: String? = null,
         val parameter_id: Any? = null
-) : GenericModel
+)
