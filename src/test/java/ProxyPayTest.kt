@@ -1,15 +1,16 @@
-import core.Environment
-import core.ProxyPayPayment
-import core.client.TransactionCallback
-import core.config.ProxyPayConfig
-import core.models.CustomFields
-import core.models.MockPaymentRequest
-import core.models.MockPaymentResponse
-import core.models.PaymentReferenceRequest
+
+import co.ao.box.ProxyPayPayment
+import co.ao.box.client.TransactionCallback
+import co.ao.box.config.Environment
+import co.ao.box.config.ProxyPayConfig
+import co.ao.box.models.CustomFields
+import co.ao.box.models.MockPaymentRequest
+import co.ao.box.models.MockPaymentResponse
+import co.ao.box.models.PaymentReferenceRequest
 
 fun main() {
 
-    ProxyPayConfig.configure(Environment.SANDBOX, "YOUR_API_KEY")
+    ProxyPayConfig.configure(Environment.SANDBOX, "uv809rb9aemuon3gc8cfq89ik8jurs0m")
 
     val customFields = CustomFields()
     customFields.app_description = "YOUR APP DESCRIPTION"
@@ -27,7 +28,7 @@ fun main() {
             .addReferenceRequest(request)
             .build()
 
-    proxyPay?.generateReference(object: TransactionCallback<String> {
+    proxyPay.generateReference(object: TransactionCallback<String> {
         override fun onSuccess(response: String) {
             println(response)
         }

@@ -1,4 +1,4 @@
-package core.models
+package co.ao.box.models
 
 data class PaymentReferenceRequest(
         var amount: String? = null,

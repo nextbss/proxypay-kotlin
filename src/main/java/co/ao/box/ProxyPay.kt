@@ -7,15 +7,16 @@
  *
  */
 
-package core
+package co.ao.box
 
+import co.ao.box.config.Environment
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
-import core.config.ProxyPayConfig
-import core.models.EmptyBody
-import core.models.MockPaymentRequest
-import core.models.MockPaymentResponse
-import core.models.PaymentReferenceRequest
+import co.ao.box.config.ProxyPayConfig
+import co.ao.box.models.EmptyBody
+import co.ao.box.models.MockPaymentRequest
+import co.ao.box.models.MockPaymentResponse
+import co.ao.box.models.PaymentReferenceRequest
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient

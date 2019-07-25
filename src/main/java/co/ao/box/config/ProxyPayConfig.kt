@@ -7,9 +7,7 @@
  *
  */
 
-package core.config
-
-import core.Environment
+package co.ao.box.config
 
 object ProxyPayConfig {
     private lateinit var environment: Environment
@@ -27,8 +25,8 @@ object ProxyPayConfig {
 
         if (apiKey == null || apiKey == "") throw java.lang.IllegalStateException("ApiKey cannot be null.")
 
-        this.environment = environment
-        this.apiKey = apiKey
+        ProxyPayConfig.environment = environment
+        ProxyPayConfig.apiKey = apiKey
         return this
     }
 

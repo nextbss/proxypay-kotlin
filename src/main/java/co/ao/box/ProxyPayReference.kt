@@ -7,13 +7,13 @@
  *
  */
 
-package core
+package co.ao.box
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types
-import core.client.TransactionCallback
-import core.config.ProxyPayConfig
-import core.models.ReferencesResponse
+import co.ao.box.client.TransactionCallback
+import co.ao.box.config.ProxyPayConfig
+import co.ao.box.models.ReferencesResponse
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
@@ -73,9 +73,9 @@ class ProxyPayReference(builder: ProxyReferenceBuilder) : ProxyPay() {
             response: Response,
             callback: TransactionCallback<List<ReferencesResponse>>
     ) {
-        when (response.code()) {
+        when (response.code) {
             200 -> {
-                callback.onSuccess(adapter.fromJson(response.body()?.string()!!)!!)
+                callback.onSuccess(adapter.fromJson(response.body?.string()!!)!!)
             }
             401 -> {
                 callback.onFailure("Your API key is wrong")
@@ -105,7 +105,7 @@ class ProxyPayReference(builder: ProxyReferenceBuilder) : ProxyPay() {
                 callback.onFailure("Service Unavailable -- We're temporarily offline for maintenance. Please try again later.")
             }
             else -> {
-                callback.onFailure("An error occured while attempting to generate a new payment reference => HTTP Status ${response.code()}")
+                callback.onFailure("An error occured while attempting to generate a new payment reference => HTTP Status ${response.code}")
             }
         }
     }

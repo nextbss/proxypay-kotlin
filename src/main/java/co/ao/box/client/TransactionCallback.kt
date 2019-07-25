@@ -7,7 +7,7 @@
  *
  */
 
-package core.client
+package co.ao.box.client
 
 /*
  *

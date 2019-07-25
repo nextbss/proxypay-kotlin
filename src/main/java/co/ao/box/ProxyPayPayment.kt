@@ -7,14 +7,14 @@
  *
  */
 
-package core
+package co.ao.box
 
 import com.squareup.moshi.JsonAdapter
-import core.client.TransactionCallback
-import core.config.ProxyPayConfig
-import core.models.MockPaymentRequest
-import core.models.MockPaymentResponse
-import core.models.PaymentReferenceRequest
+import co.ao.box.client.TransactionCallback
+import co.ao.box.config.ProxyPayConfig
+import co.ao.box.models.MockPaymentRequest
+import co.ao.box.models.MockPaymentResponse
+import co.ao.box.models.PaymentReferenceRequest
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
@@ -47,7 +47,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
         lateinit var config: ProxyPayConfig
         var mockPaymentRequest: MockPaymentRequest? = null
 
-        private fun validateDate(date: String): Boolean {
+        private fun validDate(date: String): Boolean {
             val fmt = DateTimeFormat.forPattern("yyyy-MM-dd")
             return try {
                 fmt.parseLocalDate(date)
@@ -63,7 +63,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
          */
         fun addReferenceRequest(request: PaymentReferenceRequest): PaymentTransactionBuilder {
             this.request = request
-            if (!validateDate(request.end_datetime!!)) {
+            if (!validDate(request.end_datetime!!)) {
                 throw IllegalArgumentException("Date is malformatted. Should be in YYYY-MM-dd format. ")
             }
             return this
@@ -139,9 +139,9 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
             response: Response,
             callback: TransactionCallback<String>
     ) {
-        when (response.code()) {
+        when (response.code) {
             200 -> {
-                callback.onSuccess(response.body()?.string()!!)
+                callback.onSuccess(response.body?.string()!!)
             }
             401 -> {
                 callback.onFailure("Your API key is wrong")
@@ -171,7 +171,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
                 callback.onFailure("Service Unavailable -- We're temporarily offline for maintenance. Please try again later.")
             }
             else -> {
-                callback.onFailure("An error occurred while attempting to generate a new payment reference => HTTP Status ${response.code()}")
+                callback.onFailure("An error occurred while attempting to generate a new payment reference => HTTP Status ${response.code}")
             }
         }
     }
@@ -181,9 +181,9 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
             response: Response,
             callback: TransactionCallback<String>
     ) {
-        when (response.code()) {
+        when (response.code) {
             200 -> {
-                callback.onSuccess(adapter.fromJson(response.body()?.string()!!)!!)
+                callback.onSuccess(adapter.fromJson(response.body?.string()!!)!!)
             }
             204 -> {
                 callback.onSuccess("Success")
@@ -216,7 +216,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
                 callback.onFailure("Service Unavailable -- We're temporarily offline for maintenance. Please try again later.")
             }
             else -> {
-                callback.onFailure("An error occurred => HTTP Status ${response.code()}")
+                callback.onFailure("An error occurred => HTTP Status ${response.code}")
             }
         }
     }
@@ -226,9 +226,9 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
             response: Response,
             callback: TransactionCallback<String>
     ) {
-        when (response.code()) {
+        when (response.code) {
             200 -> {
-                callback.onSuccess(adapter.fromJson(response.body()?.string()!!)!!)
+                callback.onSuccess(adapter.fromJson(response.body?.string()!!)!!)
             }
             204 -> {
                 callback.onSuccess("Reference was created or updated successfully")
@@ -261,7 +261,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
                 callback.onFailure("Service Unavailable -- We're temporarily offline for maintenance. Please try again later.")
             }
             else -> {
-                callback.onFailure("An error occurred => HTTP Status ${response.code()}")
+                callback.onFailure("An error occurred => HTTP Status ${response.code}")
             }
         }
     }
@@ -271,9 +271,9 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
             response: Response,
             callback: TransactionCallback<MockPaymentResponse>
     ) {
-        when (response.code()) {
+        when (response.code) {
             200 -> {
-                callback.onSuccess(adapter.fromJson(response.body()?.string()!!)!!)
+                callback.onSuccess(adapter.fromJson(response.body?.string()!!)!!)
             }
             401 -> {
                 callback.onFailure("Your API key is wrong")
@@ -303,7 +303,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
                 callback.onFailure("Service Unavailable -- We're temporarily offline for maintenance. Please try again later.")
             }
             else -> {
-                callback.onFailure("An error occurred while attempting to generate a new payment reference => HTTP Status ${response.code()}")
+                callback.onFailure("An error occurred while attempting to generate a new payment reference => HTTP Status ${response.code}")
             }
         }
     }

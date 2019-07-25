@@ -1,4 +1,4 @@
-package core.models
+package co.ao.box.models
 
 data class CustomFields(
         var order_number: String? = null,

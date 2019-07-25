@@ -1,4 +1,4 @@
-package core.models
+package co.ao.box.models
 
 data class MockPaymentRequest(
         var amount: String? = null,

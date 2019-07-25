@@ -7,7 +7,7 @@
  *
  */
 
-package core
+package co.ao.box.config
 
 enum class Environment {
     PRODUCTION,

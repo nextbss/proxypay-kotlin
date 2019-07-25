@@ -1,4 +1,4 @@
-package core.models
+package co.ao.box.models
 
 data class Reference(
         val number: String? = null,

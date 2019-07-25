@@ -1,4 +1,4 @@
-package core.models
+package co.ao.box.models
 
 data class ReferencesResponse(
         val terminal_period_id: Int? = null,
