@@ -10,7 +10,7 @@ import co.ao.box.models.PaymentReferenceRequest
 
 fun main() {
 
-    ProxyPayConfig.configure(Environment.SANDBOX, "uv809rb9aemuon3gc8cfq89ik8jurs0m")
+    ProxyPayConfig.configure(Environment.SANDBOX, "YOUR_API_KEY")
 
     val customFields = CustomFields()
     customFields.app_description = "YOUR APP DESCRIPTION"
