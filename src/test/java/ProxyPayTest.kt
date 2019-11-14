@@ -10,7 +10,7 @@ import co.ao.box.models.PaymentReferenceRequest
 
 fun main() {
 
-    ProxyPayConfig.configure(Environment.SANDBOX, "YOUR_API_KEY")
+    ProxyPayConfig.configure(Environment.SANDBOX, System.getenv("PROXY_PAY_API_KEY"))
 
     val customFields = CustomFields()
     customFields.app_description = "YOUR APP DESCRIPTION"
@@ -21,7 +21,7 @@ fun main() {
     val request = PaymentReferenceRequest()
     request.amount = "3000.00"
     request.custom_fields = customFields
-    request.end_datetime = "2019-10-12"
+    request.end_datetime = "2019-12-12"
 
     var proxyPay = ProxyPayPayment.PaymentTransactionBuilder()
             .addProxyPayConfiguration(ProxyPayConfig.getInstance())

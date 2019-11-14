@@ -47,16 +47,6 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
         lateinit var config: ProxyPayConfig
         var mockPaymentRequest: MockPaymentRequest? = null
 
-        private fun validDate(date: String): Boolean {
-            val fmt = DateTimeFormat.forPattern("yyyy-MM-dd")
-            return try {
-                fmt.parseLocalDate(date)
-                true
-            } catch (e: IllegalArgumentException) {
-                false
-            }
-        }
-
         /**
          * This method is used to add a PaymentReferenceRequest that will be sent
          * to ProxyPay to create or alter a payment reference
@@ -65,6 +55,10 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
             this.request = request
             if (!validDate(request.end_datetime!!)) {
                 throw IllegalArgumentException("Date is malformatted. Should be in YYYY-MM-dd format. ")
+            }
+
+            if (isAfterToday(request.end_datetime!!)) {
+                throw java.lang.IllegalArgumentException("Invalidate date. Date must be in the future.")
             }
             return this
         }
