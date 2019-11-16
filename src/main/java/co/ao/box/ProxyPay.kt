@@ -15,9 +15,7 @@ import com.squareup.moshi.Moshi
 import co.ao.box.config.ProxyPayConfig
 import co.ao.box.models.EmptyBody
 import co.ao.box.models.MockPaymentRequest
-import co.ao.box.models.MockPaymentResponse
 import co.ao.box.models.PaymentReferenceRequest
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -35,7 +33,7 @@ abstract class ProxyPay {
     private var mockPaymentAdapter: JsonAdapter<MockPaymentRequest> = moshi.adapter(MockPaymentRequest::class.java)
     protected lateinit var referenceRequest: PaymentReferenceRequest
     private val jsonAdapter: JsonAdapter<PaymentReferenceRequest> = moshi.adapter(PaymentReferenceRequest::class.java)
-    private val emptyAdapter: JsonAdapter<EmptyBody> = moshi.adapter(EmptyBody::class.java)
+    private val emptyBodyAdapter: JsonAdapter<EmptyBody> = moshi.adapter(EmptyBody::class.java)
     private val mediaType = "application/json".toMediaTypeOrNull()
 
     private fun buildRequest(endpoint: String, request: Request.Builder, body: RequestBody? = null) {
@@ -65,16 +63,13 @@ abstract class ProxyPay {
         }
     }
 
-    protected fun prepareRequest(
-            endpoint: String,
-            method: String,
-            request: PaymentReferenceRequest? = null,
-            sendBodyInRequest: Boolean? = false
-    ) {
+    protected fun prepareRequest(endpoint: String, method: String, request: PaymentReferenceRequest? = null,
+            sendBodyInRequest: Boolean? = false) {
         when (method) {
             "get" -> {
                 buildRequest(endpoint, Request.Builder().get())
             }
+
             "put" -> {
                 requestBody = RequestBody.create(mediaType, jsonAdapter.toJson(request))
                 if (sendBodyInRequest!!) {
@@ -83,15 +78,17 @@ abstract class ProxyPay {
                     buildRequest(endpoint, Request.Builder())
                 }
             }
+
             "delete" -> {
                 buildRequest(endpoint, Request.Builder().delete())
             }
+
             "post" -> {
                 requestBody = RequestBody.create(mediaType, jsonAdapter.toJson(request))
                 if (sendBodyInRequest!!) {
                     buildRequest(endpoint, Request.Builder(), requestBody)
                 } else {
-                    requestBody = RequestBody.create(mediaType, emptyAdapter.toJson(EmptyBody()))
+                    requestBody = RequestBody.create(mediaType, emptyBodyAdapter.toJson(EmptyBody()))
                     buildRequest(endpoint, Request.Builder(), requestBody)
                 }
             }

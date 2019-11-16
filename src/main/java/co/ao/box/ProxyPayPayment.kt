@@ -12,13 +12,13 @@ package co.ao.box
 import com.squareup.moshi.JsonAdapter
 import co.ao.box.client.TransactionCallback
 import co.ao.box.config.ProxyPayConfig
+import co.ao.box.core.ApiResponseHandler
 import co.ao.box.models.MockPaymentRequest
 import co.ao.box.models.MockPaymentResponse
 import co.ao.box.models.PaymentReferenceRequest
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
-import org.joda.time.format.DateTimeFormat
 import java.io.IOException
 
 /**
@@ -54,11 +54,11 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
         fun addReferenceRequest(request: PaymentReferenceRequest): PaymentTransactionBuilder {
             this.request = request
             if (!validDate(request.end_datetime!!)) {
-                throw IllegalArgumentException("Date is malformatted. Should be in YYYY-MM-dd format. ")
+                throw IllegalArgumentException("Date is mal-formatted. Should be in YYYY-MM-dd format. ")
             }
 
-            if (isAfterToday(request.end_datetime!!)) {
-                throw java.lang.IllegalArgumentException("Invalidate date. Date must be in the future.")
+            if (dateIsInPast(request.end_datetime!!)) {
+                throw java.lang.IllegalArgumentException("Invalid date. Date must be in the future.")
             }
             return this
         }
@@ -80,7 +80,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
 
     /**
      * Creates or updates a payment reference with given Id
-     * @param callback: TransactionCallback<PaymentReferenseResponse>
+     * @param callback: TransactionCallback<PaymentReferenceResponse>
      * @param id: String - Valid Reference Id
      * @throws IllegalStateException - Throws exception when no reference id is provided
      */
@@ -88,12 +88,12 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
         if (id.isBlank()) throw IllegalStateException("You must provide a valid and existing payment reference id.")
         prepareRequest("/references/$id", "put", this.referenceRequest, sendBodyInRequest = true)
         client.newCall(request).enqueue(object : Callback {
-            override fun onResponse(p0: Call, p1: Response) {
-                handleResponse(jsonAdapter, p1, callback)
+            override fun onResponse(call: Call, response: Response) {
+                ApiResponseHandler.handleResponse(jsonAdapter, response, callback)
             }
 
-            override fun onFailure(p0: Call, p1: IOException) {
-                println(p1.message)
+            override fun onFailure(call: Call, exception: IOException) {
+                println(exception.message)
             }
         })
     }
@@ -105,12 +105,12 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
     fun generateReferenceId(callback: TransactionCallback<String>) {
         prepareRequest("/reference_ids", "post", sendBodyInRequest = false)
         client.newCall(request).enqueue(object : Callback {
-            override fun onResponse(p0: Call, p1: Response) {
-                handleRefResponse(referenceAdapter, p1, callback)
+            override fun onResponse(call: Call, response: Response) {
+                ApiResponseHandler.handleResponse(referenceAdapter, response, callback)
             }
 
-            override fun onFailure(p0: Call, p1: IOException) {
-                println(p1.message)
+            override fun onFailure(call: Call, exception: IOException) {
+                println(exception.message)
             }
         })
     }
@@ -118,188 +118,14 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
     fun mockPayment(callback: TransactionCallback<MockPaymentResponse>) {
         prepareMockRequest("/payments", "post", this.mockPaymentRequest)
         client.newCall(request).enqueue(object : Callback {
-            override fun onResponse(p0: Call, p1: Response) {
-                handleMockPaymentResponse(mockPaymentAdapter, p1, callback)
+            override fun onResponse(call: Call, response: Response) {
+                ApiResponseHandler.handleMockPaymentResponse(mockPaymentAdapter, response, callback)
             }
 
-            override fun onFailure(p0: Call, p1: IOException) {
-                println(p1.message)
+            override fun onFailure(call: Call, exception: IOException) {
+                println(exception.message)
             }
         })
-    }
-
-    private fun handleRefResponse(
-            adapter: JsonAdapter<String>,
-            response: Response,
-            callback: TransactionCallback<String>
-    ) {
-        when (response.code) {
-            200 -> {
-                callback.onSuccess(response.body?.string()!!)
-            }
-            401 -> {
-                callback.onFailure("Your API key is wrong")
-            }
-            400 -> {
-                callback.onFailure("Bad Request -- Request is malformed.")
-            }
-            404 -> {
-                callback.onFailure("Not Found -- The specified resource could not be found")
-            }
-            405 -> {
-                callback.onFailure("Method Now Allowed -- Tou tried to accesss a resource with an invalid HTTP method")
-            }
-            406 -> {
-                callback.onFailure("Not Acceptable -- You requested a format that is not json")
-            }
-            422 -> {
-                callback.onFailure("Unprocessable Entity -- Your request includes invalid fields. Check the response body for details")
-            }
-            429 -> {
-                callback.onFailure("Too Many Requests -- You're exceeding the API rate limit! Reduce the number of requests / minute.")
-            }
-            500 -> {
-                callback.onFailure("Internal Server Error -- We had a problem with our server. Try again later ")
-            }
-            503 -> {
-                callback.onFailure("Service Unavailable -- We're temporarily offline for maintenance. Please try again later.")
-            }
-            else -> {
-                callback.onFailure("An error occurred while attempting to generate a new payment reference => HTTP Status ${response.code}")
-            }
-        }
-    }
-
-    private fun handleDeleteResponse(
-            adapter: JsonAdapter<String>,
-            response: Response,
-            callback: TransactionCallback<String>
-    ) {
-        when (response.code) {
-            200 -> {
-                callback.onSuccess(adapter.fromJson(response.body?.string()!!)!!)
-            }
-            204 -> {
-                callback.onSuccess("Success")
-            }
-            401 -> {
-                callback.onFailure("Your API key is wrong")
-            }
-            400 -> {
-                callback.onFailure("Bad Request -- Request is malformed.")
-            }
-            404 -> {
-                callback.onFailure("Not Found -- The specified resource could not be found")
-            }
-            405 -> {
-                callback.onFailure("Method Now Allowed -- Tou tried to accesss a resource with an invalid HTTP method")
-            }
-            406 -> {
-                callback.onFailure("Not Acceptable -- You requested a format that is not json")
-            }
-            422 -> {
-                callback.onFailure("Unprocessable Entity -- Your request includes invalid fields. Check the response body for details")
-            }
-            429 -> {
-                callback.onFailure("Too Many Requests -- You're exceeding the API rate limit! Reduce the number of requests / minute.")
-            }
-            500 -> {
-                callback.onFailure("Internal Server Error -- We had a problem with our server. Try again later ")
-            }
-            503 -> {
-                callback.onFailure("Service Unavailable -- We're temporarily offline for maintenance. Please try again later.")
-            }
-            else -> {
-                callback.onFailure("An error occurred => HTTP Status ${response.code}")
-            }
-        }
-    }
-
-    private fun handleResponse(
-            adapter: JsonAdapter<String>,
-            response: Response,
-            callback: TransactionCallback<String>
-    ) {
-        when (response.code) {
-            200 -> {
-                callback.onSuccess(adapter.fromJson(response.body?.string()!!)!!)
-            }
-            204 -> {
-                callback.onSuccess("Reference was created or updated successfully")
-            }
-            401 -> {
-                callback.onFailure("Your API key is wrong")
-            }
-            400 -> {
-                callback.onFailure("Bad Request -- Request is malformed.")
-            }
-            404 -> {
-                callback.onFailure("Not Found -- The specified resource could not be found")
-            }
-            405 -> {
-                callback.onFailure("Method Now Allowed -- Tou tried to accesss a resource with an invalid HTTP method")
-            }
-            406 -> {
-                callback.onFailure("Not Acceptable -- You requested a format that is not json")
-            }
-            422 -> {
-                callback.onFailure("Unprocessable Entity -- Your request includes invalid fields. Check the response body for details")
-            }
-            429 -> {
-                callback.onFailure("Too Many Requests -- You're exceeding the API rate limit! Reduce the number of requests / minute.")
-            }
-            500 -> {
-                callback.onFailure("Internal Server Error -- We had a problem with our server. Try again later ")
-            }
-            503 -> {
-                callback.onFailure("Service Unavailable -- We're temporarily offline for maintenance. Please try again later.")
-            }
-            else -> {
-                callback.onFailure("An error occurred => HTTP Status ${response.code}")
-            }
-        }
-    }
-
-    private fun handleMockPaymentResponse(
-            adapter: JsonAdapter<MockPaymentResponse>,
-            response: Response,
-            callback: TransactionCallback<MockPaymentResponse>
-    ) {
-        when (response.code) {
-            200 -> {
-                callback.onSuccess(adapter.fromJson(response.body?.string()!!)!!)
-            }
-            401 -> {
-                callback.onFailure("Your API key is wrong")
-            }
-            400 -> {
-                callback.onFailure("Bad Request -- Request is malformed.")
-            }
-            404 -> {
-                callback.onFailure("Not Found -- The specified resource could not be found")
-            }
-            405 -> {
-                callback.onFailure("Method Now Allowed -- Tou tried to accesss a resource with an invalid HTTP method")
-            }
-            406 -> {
-                callback.onFailure("Not Acceptable -- You requested a format that is not json")
-            }
-            422 -> {
-                callback.onFailure("Unprocessable Entity -- Your request includes invalid fields. Check the response body for details")
-            }
-            429 -> {
-                callback.onFailure("Too Many Requests -- You're exceeding the API rate limit! Reduce the number of requests / minute.")
-            }
-            500 -> {
-                callback.onFailure("Internal Server Error -- We had a problem with our server. Try again later ")
-            }
-            503 -> {
-                callback.onFailure("Service Unavailable -- We're temporarily offline for maintenance. Please try again later.")
-            }
-            else -> {
-                callback.onFailure("An error occurred while attempting to generate a new payment reference => HTTP Status ${response.code}")
-            }
-        }
     }
 
     /**
@@ -312,12 +138,12 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
         if (id.isBlank()) throw IllegalStateException("You must provide a valid and existing payment reference id.")
         prepareRequest("/references/$id", "delete", this.referenceRequest, sendBodyInRequest = false)
         client.newCall(request).enqueue(object : Callback {
-            override fun onResponse(p0: Call, p1: Response) {
-                handleDeleteResponse(jsonAdapter, p1, transactionCallback)
+            override fun onResponse(p0: Call, response: Response) {
+                ApiResponseHandler.handleResponse(jsonAdapter, response, transactionCallback)
             }
 
-            override fun onFailure(p0: Call, p1: IOException) {
-                println(p1.message)
+            override fun onFailure(call: Call, exception: IOException) {
+                println(exception.message)
             }
         })
     }
@@ -333,7 +159,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
         prepareRequest("/payments/$id", "delete", this.referenceRequest, sendBodyInRequest = false)
         client.newCall(request).enqueue(object : Callback {
             override fun onResponse(p0: Call, p1: Response) {
-                handleDeleteResponse(jsonAdapter, p1, transactionCallback)
+                ApiResponseHandler.handleResponse(jsonAdapter, p1, transactionCallback)
             }
 
             override fun onFailure(p0: Call, p1: IOException) {
