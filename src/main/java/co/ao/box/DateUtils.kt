@@ -13,7 +13,7 @@ fun validDate(date: String): Boolean {
     }
 }
 
-fun isAfterToday(date: String): Boolean {
+fun dateIsInPast(date: String): Boolean {
     val fmt = DateTimeFormat.forPattern("yyyy-MM-dd")
     val formattedDateTime: DateTime = fmt.parseDateTime(date)
     return when(DateTime.now().isAfter(formattedDateTime)) {
