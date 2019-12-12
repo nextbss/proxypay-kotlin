@@ -20,6 +20,9 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import java.lang.IllegalStateException
+import java.util.logging.Logger
+import kotlin.math.E
 
 abstract class ProxyPay {
     protected val client: OkHttpClient = OkHttpClient()
@@ -35,6 +38,7 @@ abstract class ProxyPay {
     private val jsonAdapter: JsonAdapter<PaymentReferenceRequest> = moshi.adapter(PaymentReferenceRequest::class.java)
     private val emptyBodyAdapter: JsonAdapter<EmptyBody> = moshi.adapter(EmptyBody::class.java)
     private val mediaType = "application/json".toMediaTypeOrNull()
+    private val logger = Logger.getLogger(this.javaClass.simpleName);
 
     private fun buildRequest(endpoint: String, request: Request.Builder, body: RequestBody? = null) {
         when (config.getEnvironment()) {
@@ -57,8 +61,12 @@ abstract class ProxyPay {
     protected fun prepareMockRequest(endpoint: String, method: String, mockPaymentRequest: MockPaymentRequest) {
         when (method) {
             "post" -> {
-                requestBody = RequestBody.create(mediaType, mockPaymentAdapter.toJson(mockPaymentRequest))
-                buildRequest(endpoint, Request.Builder(), requestBody)
+                if (config.getEnvironment() == Environment.SANDBOX) {
+                    requestBody = RequestBody.create(mediaType, mockPaymentAdapter.toJson(mockPaymentRequest))
+                    buildRequest(endpoint, Request.Builder(), requestBody)
+                } else {
+                    throw IllegalStateException("Can not run mock payments in production environment")
+                }
             }
         }
     }
