@@ -18,6 +18,8 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import java.io.IOException
+import java.util.logging.Level
+import java.util.logging.Logger
 
 /**
  * This class is responsible for interacting wth references
@@ -28,7 +30,7 @@ import java.io.IOException
 class ProxyPayReference(builder: ProxyReferenceBuilder) : ProxyPay() {
     private val type = Types.newParameterizedType(List::class.java, ReferencesResponse::class.java)
     private val jsonAdapter: JsonAdapter<List<ReferencesResponse>> = moshi.adapter(type)
-
+    private val logger = Logger.getLogger(this.javaClass.simpleName)
     init {
         super.config = builder.config
     }
@@ -49,14 +51,15 @@ class ProxyPayReference(builder: ProxyReferenceBuilder) : ProxyPay() {
      * Returns any Payment events stored on the server that were not yet Acknowledged by the client application.
      * Specify the amount of references (between 1 and 100), defaults to 100
      * @param callback: TransactionCallback - The callback to trigger events
-     * @param itemsToReturn: Int - The amount of references to return (defaults to 100)
+     * @param numberOfItemsToReturn: Int - The amount of references to return (defaults to 100)
      * @throws IllegalStateException: Exception - When the value specified by itemsToReturn is not in the range of 1 to 100
      */
-    fun getPayments(callback: TransactionCallback<List<ReferencesResponse>>, itemsToReturn: Int = 100) {
-        if (itemsToReturn !in 1..100) {
+    fun getPayments(callback: TransactionCallback<List<ReferencesResponse>>, numberOfItemsToReturn: Int = 100) {
+        logger.log(Level.INFO, "Initiated request to get payments")
+        if (numberOfItemsToReturn !in 1..100) {
             throw IllegalStateException("You must specify a value between 1 and 100")
         }
-        prepareRequest("/payments?n=$itemsToReturn", "get")
+        prepareRequest("/payments?n=$numberOfItemsToReturn", "get")
         client.newCall(request).enqueue(object : Callback {
             override fun onResponse(p0: Call, p1: Response) {
                 handleResponse(jsonAdapter, p1, callback)

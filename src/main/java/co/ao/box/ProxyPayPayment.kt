@@ -20,6 +20,8 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import java.io.IOException
+import java.util.logging.Level
+import java.util.logging.Logger
 
 /**
  * This class is responsible for interacting wth references
@@ -30,6 +32,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
     private val jsonAdapter: JsonAdapter<String> = moshi.adapter(String::class.java)
     private val referenceAdapter: JsonAdapter<String> = moshi.adapter(String::class.java)
     private val mockPaymentAdapter: JsonAdapter<MockPaymentResponse> = moshi.adapter(MockPaymentResponse::class.java)
+    private val logger = Logger.getLogger(this.javaClass.simpleName)
 
     init {
         super.config = builder.config
@@ -85,6 +88,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
      * @throws IllegalStateException - Throws exception when no reference id is provided
      */
     fun generateReference(callback: TransactionCallback<String>, id: String) {
+        logger.log(Level.INFO, "Initiated request to generate MULTI-CAIXA reference")
         if (id.isBlank()) throw IllegalStateException("You must provide a valid and existing payment reference id.")
         prepareRequest("/references/$id", "put", this.referenceRequest, sendBodyInRequest = true)
         client.newCall(request).enqueue(object : Callback {
@@ -103,6 +107,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
      * @param callback: TransactionCallback - The callback to trigger events
      */
     fun generateReferenceId(callback: TransactionCallback<String>) {
+        logger.log(Level.INFO, "Initiated request to generate reference ID via MULTI-CAIXA")
         prepareRequest("/reference_ids", "post", sendBodyInRequest = false)
         client.newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
@@ -116,6 +121,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
     }
 
     fun mockPayment(callback: TransactionCallback<MockPaymentResponse>) {
+        logger.log(Level.INFO, "Initiated request to mock/simulate payments in SANDBOX environment")
         prepareMockRequest("/payments", "post", this.mockPaymentRequest)
         client.newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
@@ -135,6 +141,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
      * @throws IllegalStateException - Throws exception when no reference id is provided
      */
     fun deleteReference(transactionCallback: TransactionCallback<String>, id: String) {
+        logger.log(Level.INFO, "Initiated request to delete reference")
         if (id.isBlank()) throw IllegalStateException("You must provide a valid and existing payment reference id.")
         prepareRequest("/references/$id", "delete", this.referenceRequest, sendBodyInRequest = false)
         client.newCall(request).enqueue(object : Callback {
@@ -155,6 +162,7 @@ class ProxyPayPayment(builder: PaymentTransactionBuilder) : ProxyPay() {
      * @throws IllegalStateException - Throws exception when no reference id is provided
      */
     fun acknowledgePayment(transactionCallback: TransactionCallback<String>, id: String) {
+        logger.log(Level.INFO, "Initiated request to acknowledge payment")
         if (id.isBlank()) throw IllegalStateException("You must provide a valid and existing payment reference id.")
         prepareRequest("/payments/$id", "delete", this.referenceRequest, sendBodyInRequest = false)
         client.newCall(request).enqueue(object : Callback {

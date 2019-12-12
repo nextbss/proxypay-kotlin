@@ -21,8 +21,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import java.lang.IllegalStateException
+import java.util.logging.Level
 import java.util.logging.Logger
-import kotlin.math.E
 
 abstract class ProxyPay {
     protected val client: OkHttpClient = OkHttpClient()
@@ -41,21 +41,26 @@ abstract class ProxyPay {
     private val logger = Logger.getLogger(this.javaClass.simpleName);
 
     private fun buildRequest(endpoint: String, request: Request.Builder, body: RequestBody? = null) {
+        logger.log(Level.INFO, "Preparing to build HTTP request")
         when (config.getEnvironment()) {
             Environment.SANDBOX -> {
                 request.url("$sandboxUrl$endpoint")
+                logger.log(Level.INFO, "Using SANDBOX ENVIRONMENT")
             }
             Environment.PRODUCTION -> {
                 request.url("$productionUrl$endpoint")
+                logger.log(Level.INFO, "Using SANDBOX ENVIRONMENT")
             }
         }
         when (body != null) {
             true -> request.post(body)
         }
+        logger.log(Level.INFO, "Preparing to add headers to HTTP request")
         request.addHeader("Accept", "application/vnd.proxypay.v2+json")
                 .addHeader("Content-Type", mediaType.toString())
                 .addHeader("Authorization", "Token ${config.getInstance().getApiKey()}")
         this.request = request.build()
+        logger.log(Level.INFO, "Adding headers to HTTP request ended successfully")
     }
 
     protected fun prepareMockRequest(endpoint: String, method: String, mockPaymentRequest: MockPaymentRequest) {
